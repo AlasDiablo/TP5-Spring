@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="vendor/bootstrap.css" rel="stylesheet">
+    <script src="vendor/bootstrap.bundle.js"></script>
+    <script src="vendor/jquery-3.6.3.js"></script>
+    <title>Student</title>
+    <style>
+        body {
+            padding: 10px;
+        }
+        .box {
+            border-color: cyan;
+            border-width: 2px;
+            border-style: solid;
+            border-radius: 10px;
+            display: inline-block;
+            padding: 10px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body>
+<h3>Student</h3>
+<div class="box">
+    <h5>List des etudiant</h5>
+    <ul id="list">
+
+    </ul>
+    <button onclick="updateList()" class="btn btn-primary">Mettre à jour</button>
+</div>
+
+<div class="box">
+    <div class="toast" id="add-result" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Results</strong>
+            <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="toast-body" id="add-result-text"></div>
+    </div>
+
+    <h5>Ajouté un etudiant</h5>
+    <div class="form-group">
+        <label for="nom" class="form-label mt-4">Nom</label>
+        <input type="text" class="form-control" id="nom" aria-describedby="nom" placeholder="nom">
+    </div>
+
+    <div class="form-group">
+        <label for="prenom" class="form-label mt-4">Prénom</label>
+        <input type="text" class="form-control" id="prenom" aria-describedby="nom" placeholder="nom">
+    </div>
+
+    <div class="form-group">
+        <label for="diplome" class="form-label mt-4">Diplome</label>
+        <input type="text" class="form-control" id="diplome" aria-describedby="diplome" placeholder="diplome">
+    </div>
+
+    <button onclick="ajout()" class="btn btn-primary" style="margin-top: 24px">Ajouté</button>
+</div>
+
+<div class="box">
+    <div class="toast" id="get-result" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Results</strong>
+            <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="toast-body">
+            L'etudiant n'a pas pue etre obtenue
+        </div>
+    </div>
+
+    <h5>Obtenir un etudiant</h5>
+    <div class="form-group">
+        <label for="id" class="form-label mt-4">ID</label>
+        <input type="text" class="form-control" id="id" aria-describedby="id" placeholder="id">
+    </div>
+
+    <div class="form-group">
+        <label for="nom-get" class="form-label mt-4">Nom</label>
+        <input type="text" class="form-control" id="nom-get" aria-describedby="nom-get" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="prenom-get" class="form-label mt-4">Prénom</label>
+        <input type="text" class="form-control" id="prenom-get" aria-describedby="prenom-get" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="diplome-get" class="form-label mt-4">Diplome</label>
+        <input type="text" class="form-control" id="diplome-get" aria-describedby="diplome-get" readonly>
+    </div>
+
+    <button onclick="obtenir()" class="btn btn-primary" style="margin-top: 24px">Obtenir</button>
+</div>
+
+<div class="box">
+    <div class="toast" id="del-result" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Results</strong>
+            <button type="button" class="btn-close ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
+        <div class="toast-body" id="del-result-text"></div>
+    </div>
+
+    <h5>Supprimer un etudiant</h5>
+    <div class="form-group">
+        <label for="id-del" class="form-label mt-4">ID</label>
+        <input type="text" class="form-control" id="id-del" aria-describedby="id-del" placeholder="id">
+    </div>
+
+    <button onclick="supprimer()" class="btn btn-primary" style="margin-top: 24px">Supprimé</button>
+</div>
+
+
+<script>
+    const list = document.getElementById('list');
+
+    const addNom = document.getElementById('nom');
+    const addPrenom = document.getElementById('prenom');
+    const addDiplome = document.getElementById('diplome');
+    const addResult = document.getElementById('add-result');
+    const addResultText = document.getElementById('add-result-text');
+
+    const getId = document.getElementById('id');
+    const getPrenom = document.getElementById('prenom-get');
+    const getNom = document.getElementById('nom-get');
+    const getDiplome = document.getElementById('diplome-get');
+    const getResult = document.getElementById('get-result');
+
+    const delId = document.getElementById('id-del');
+    const delResult = document.getElementById('del-result');
+    const delResultText = document.getElementById('del-result-text');
+
+    const getById = (id, action, error) => {
+        $.ajax({
+            url: `//127.0.0.1:9999/student/${id}`,
+            type: 'GET',
+            success: action,
+            error,
+        });
+    };
+
+    const deleteById = (id, action, error) => {
+        $.ajax({
+            url: `//127.0.0.1:9999/student/${id}`,
+            type: 'DELETE',
+            success: action,
+            error,
+        });
+    };
+
+    const get = (action) => {
+        $.ajax({
+            url: '//127.0.0.1:9999/student/',
+            type: 'GET',
+            success: action
+        });
+    };
+
+    const add = (data, action) => {
+        $.ajax({
+            url: '//127.0.0.1:9999/student/',
+            type: 'POST',
+            contentType: 'application/json;charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            error: action
+        });
+    };
+
+    const supprimer = () => {
+        deleteById(delId.value, () => {
+            delResultText.innerHTML = "L'operation a abouti sans problème";
+            delResult.className += ' show';
+            updateList();
+        }, () => {
+            delResultText.innerHTML = "L'operation n'a pas pue aboutir";
+            delResult.className += ' show';
+        })
+    }
+
+    const obtenir = () => {
+        getById(getId.value, (result) => {
+            if (Array.isArray(result) || result === null) {
+                getPrenom.value = '';
+                getNom.value = '';
+                getDiplome.value = '';
+                getResult.className += ' show';
+                return;
+            }
+            getPrenom.value = result.prenom;
+            getNom.value = result.nom;
+            getDiplome.value = result.diplome;
+        }, () => {
+            getPrenom.value = '';
+            getNom.value = '';
+            getDiplome.value = '';
+            getResult.className += ' show';
+        })
+    }
+
+    const ajout = () => {
+        const data = {
+            nom: addNom.value,
+            prenom: addPrenom.value,
+            diplome: addDiplome.value
+        };
+        add(data, (res) => {
+            if (res.status === 200) {
+                addResultText.innerHTML = "L'operation a abouti sans problème";
+            } else {
+                addResultText.innerHTML = "L'operation n'a pas pue aboutir";
+            }
+            addResult.className += ' show';
+            updateList();
+        });
+    };
+
+    const updateList = () => {
+        get((results) => {
+            let ulContent = '';
+            results.forEach((value) => {
+                ulContent += `
+<li>
+    Etudiant ${value.id} :
+    <ul>
+        <li>Nom : ${value.nom}</li>
+        <li>Prénom : ${value.prenom}</li>
+        <li>Diplome : ${value.diplome}</li>
+    </ul>
+</li>
+`;
+            });
+            list.innerHTML = ulContent;
+        });
+    };
+
+    updateList();
+</script>
+</body>
+</html>
